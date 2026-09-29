@@ -1,0 +1,446 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   DESIGN TOKENS — Slate Media House
+   The single source of truth for every visual decision on the site.
+   Specification: slate-media-house/README.md
+   Component specs: slate-media-house/components/*.md
+
+   Rules that hold everywhere:
+   - No colour exists outside the semantic table below.
+   - No shadow is ever added; depth comes from surface, border and spacing.
+   - One radius per component, and a child is never rounder than its parent.
+   - Sentence case everywhere. Uppercase is reserved for acronyms.
+   ========================================================================= */
+@theme {
+  /* --- Semantic colour layer (slate-media-house/README.md §1) ----------
+     Detected raw tokens, exposed under the names components use.
+     Contrast is WCAG 2.1 relative luminance against the paired surface.   */
+  --color-primary: #000000; /* colour.1  21:1 on surface · never text on inverse */
+  --color-secondary: #575757; /* colour.2  7.23:1 on surface · 7.36:1 on inverse */
+  --color-line: #eeebe2; /* colour.5 · 1.19:1 on surface — decorative borders only */
+  --color-surface: #ffffff; /* colour.7 · section and page background */
+  --color-inverse: #efede6; /* colour.6 · 17.93:1 on primary — body on dark */
+  --color-inverse-strong: #ffffff; /* colour.7 · 21:1 on primary — headings on dark */
+  --color-accent: #8a6a45; /* accent.primary · 4.97:1 on surface, 4.23:1 on primary */
+  --color-accent-soft: #e3d6c1; /* accent.secondary · 14.65:1 under a black label */
+
+  /* --- Typography (slate-media-house/README.md §2) -------------------- */
+  /* One grotesque family, declared once. Display and body share the stack;
+     hierarchy comes from size, weight and tracking, never from a second face. */
+  --font-sans: var(--font-sans-face), "Candara", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans-face), "Candara", ui-sans-serif, system-ui, sans-serif;
+
+  --text-caption: 1rem; /* 16 / 22.4 — labels, meta, button labels */
+  --text-caption--line-height: 1.4;
+  --text-caption--letter-spacing: 0;
+
+  --text-body: 1.125rem; /* 18 / 27 — body copy, list items, form help */
+  --text-body--line-height: 1.5;
+  --text-body--letter-spacing: 0;
+
+  --text-lede: 1.3125rem; /* 21 / 33 — hero and page introduction */
+  --text-lede--line-height: 1.55;
+  --text-lede--letter-spacing: 0;
+
+  --text-title-sm: 1.375rem; /* 22 / 28.6 — card and step titles */
+  --text-title-sm--line-height: 1.3;
+  --text-title-sm--letter-spacing: 0;
+
+  --text-title: 1.75rem; /* 28 / 33.6 — sub-section headings */
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.01em;
+
+  --text-display-sm: 2.125rem; /* 34px, stepped up per breakpoint */
+  --text-display-sm--line-height: 1.08;
+  --text-display-sm--letter-spacing: -0.02em;
+
+  --text-display-lg: 2.75rem; /* 44px, stepped up to the 150px token */
+  --text-display-lg--line-height: 1.02;
+  --text-display-lg--letter-spacing: -0.025em;
+
+  /* --- Radius (slate-media-house/README.md §4) ------------------------ */
+  --radius-sm: 10px; /* controls, inputs, tags, thumbnails */
+  --radius-md: 20px; /* cards, media frames, panels */
+  --radius-lg: 70px; /* single-line pill controls only */
+  --radius-xl: 100px; /* oversized media masks */
+
+  /* --- Spacing (slate-media-house/README.md §3) ----------------------- */
+  /* The detected 19-step scale. Steps 2, 4, 5, 6, 10, 12, 13, 15 and 17
+     already match the 4px base and are left at their Tailwind value.      */
+  --spacing-1: 6px;
+  --spacing-3: 14px;
+  --spacing-7: 26px;
+  --spacing-8: 30px;
+  --spacing-9: 34px;
+  --spacing-11: 42px;
+  --spacing-14: 53px; /* deprecated — use space-13 (52px) */
+  --spacing-16: 75px;
+  --spacing-18: 100px;
+  --spacing-19: 150px;
+
+  /* --- Motion (slate-media-house/README.md §6) ------------------------ */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --slate-duration-fast: 150ms;
+  --slate-duration-slow: 300ms;
+}
+
+@layer base {
+  /* Display steps are fixed, not viewport-relative, so a heading wraps
+     instead of shrinking. Each step is a token, never a fluid value. */
+  @media (min-width: 640px) {
+    :root {
+      --text-display-sm: 3rem; /* 48px */
+      --text-display-lg: 4.5rem; /* 72px */
+    }
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --text-display-sm: 4.125rem; /* 66px — the section heading token */
+      --text-display-lg: 6.875rem; /* 110px */
+    }
+  }
+
+  @media (min-width: 1536px) {
+    :root {
+      --text-display-lg: 9.375rem; /* 150px — the hero token */
+    }
+  }
+
+  /* Below 360px (SE-class phones, small Androids) the 44px hero token wraps to
+     three lines and eats the fold, so both display steps drop one notch.
+     Every step is still a fixed token, never a fluid value. */
+  @media (max-width: 359px) {
+    :root {
+      --text-display-sm: 1.875rem; /* 30px */
+      --text-display-lg: 2.25rem; /* 36px */
+    }
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    /* Clears the navigation bar on every anchor jump, including the safe-area
+       inset a notched phone adds above it. Sections do not add their own scroll
+       margin; this value is the single offset. */
+    scroll-padding-top: calc(4.5rem + env(safe-area-inset-top));
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Long unbroken strings (emails, file names, URLs) break instead of pushing
+     the page sideways on a narrow phone. */
+  p,
+  li,
+  td,
+  th,
+  dd,
+  dt,
+  figcaption,
+  h1,
+  h2,
+  h3,
+  h4,
+  a {
+    overflow-wrap: break-word;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* On an inverse surface the clay ring drops below 3:1, so the ring flips to
+     the inverse colour. `:where` keeps the base rule's specificity. */
+  :where(.bg-primary, .bg-inverse) :focus-visible {
+    outline-color: var(--color-inverse-strong);
+  }
+
+  /* Native controls inherit the palette */
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Touch behaviour. `manipulation` drops the 300ms double-tap wait without
+     disabling pinch-zoom, which stays available — zooming is never blocked.
+     The iOS tap flash is suppressed so a tap does not grey out the element. */
+  a,
+  button,
+  [role="button"],
+  summary,
+  label,
+  select {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* A slider must keep its own gestures: dragging is the interaction. */
+  input[type="range"] {
+    touch-action: auto;
+  }
+
+  /* Long-press on a phone should offer "copy", not a callout on a phone
+     number or a save dialog on an image. */
+  a[href^="tel:"],
+  a[href^="mailto:"] {
+    -webkit-touch-callout: default;
+  }
+}
+
+@layer components {
+  /* --- Motion tokens (slate-media-house/README.md §6) ------------------ */
+  .duration-fast {
+    transition-duration: var(--slate-duration-fast);
+  }
+
+  .duration-slow {
+    transition-duration: var(--slate-duration-slow);
+  }
+
+  /* --- Surfaces (slate-media-house/components/section-layout.md §3) ---- */
+  /* `default` is the page surface. `inset` is the only way to differentiate
+     a light section, and it always carries a decorative 1px border.        */
+  .surface-inset {
+    background-color: var(--color-surface);
+    border-block: 1px solid var(--color-line);
+  }
+
+  /* Page gutter — one place to change the horizontal rhythm. The safe-area
+     insets win when a phone is in landscape with a notch on one side, so
+     content never sits under the cutout. */
+  .shell {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 90rem;
+    padding-inline: max(1.5rem, env(safe-area-inset-left)) max(1.5rem, env(safe-area-inset-right));
+  }
+
+  @media (min-width: 640px) {
+    .shell {
+      padding-inline: max(2.5rem, env(safe-area-inset-left)) max(2.5rem, env(safe-area-inset-right));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .shell {
+      padding-inline: max(3rem, env(safe-area-inset-left)) max(3rem, env(safe-area-inset-right));
+    }
+  }
+
+  /* Minimum comfortable touch target (44 x 44 CSS px, WCAG 2.5.5). Applied to
+     any control that is text or an icon rather than a filled button. */
+  .tap {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  /* Eyebrow — sentence case, one rule, no uppercase. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-size: var(--text-caption);
+    line-height: 1;
+    font-weight: 500;
+    color: var(--color-secondary);
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 1.75rem;
+    height: 1px;
+    background-color: var(--color-secondary);
+  }
+
+  .eyebrow-on-dark {
+    color: var(--color-inverse);
+  }
+
+  /* Link variant `arrow` — see components/link.md §3 */
+  .arrow-link {
+    display: inline-flex;
+    align-items: center;
+    /* 44px minimum touch target, without changing the type size */
+    min-height: 2.75rem;
+    gap: var(--spacing-2);
+    font-size: var(--text-caption);
+    font-weight: 500;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: var(--spacing-2);
+    text-decoration-thickness: 1px;
+    transition: color var(--slate-duration-fast) var(--ease-standard);
+  }
+
+  .arrow-link:hover {
+    color: var(--color-primary);
+  }
+
+  .arrow-link svg {
+    transition: transform var(--slate-duration-slow) var(--ease-standard);
+  }
+
+  .arrow-link:hover svg {
+    transform: translate(0.25rem, -0.25rem);
+  }
+
+  /* Photograph frame — radius-md, quiet zoom, no shadow */
+  .frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+
+  .frame img {
+    transition: transform var(--slate-duration-slow) var(--ease-standard);
+  }
+
+  /* Only on devices with a real pointer: on touch, :hover sticks after a tap
+     and leaves the frame scaled for good. */
+  @media (hover: hover) and (pointer: fine) {
+    .group:hover .frame img,
+    .frame:hover img {
+      transform: scale(1.02);
+    }
+  }
+
+  /* Horizontal snap rail — see EquipmentSection. The scrollbar is hidden so
+     the rail does not break the hairline rhythm; the partially visible next
+     card is the affordance. */
+  .snap-rail {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .snap-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Faint drafting grid, used behind a few sections */
+  .drafting-grid {
+    background-image:
+      linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+    background-size: 96px 96px;
+  }
+
+  /* Placeholder text for content the business owner still has to supply */
+  .placeholder {
+    color: var(--color-secondary);
+  }
+
+  /* --- Hero entrance --------------------------------------------------- *
+   * Pure CSS so the hero needs no client JavaScript at all. Durations come
+   * from the motion tokens; the delays stagger the sequence.             */
+  @keyframes hero-rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 1rem, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes hero-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .hero-enter {
+    animation: hero-rise var(--slate-duration-slow) var(--ease-standard) both;
+    animation-delay: var(--enter-delay, 0s);
+  }
+
+  .hero-fade {
+    animation: hero-fade var(--slate-duration-slow) var(--ease-standard) both;
+    animation-delay: var(--enter-delay, 0s);
+  }
+
+  /* --- Scroll reveal ---------------------------------------------------- *
+   * Driven by one IntersectionObserver (components/ui/RevealObserver.tsx).
+   * The `js` class is added before first paint, so without JavaScript the
+   * content is simply visible.                                          */
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-distance, 8px), 0);
+    transition:
+      opacity var(--slate-duration-slow) var(--ease-standard) var(--reveal-delay, 0s),
+      transform var(--slate-duration-slow) var(--ease-standard) var(--reveal-delay, 0s);
+  }
+
+  .js [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js [data-reveal] {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
