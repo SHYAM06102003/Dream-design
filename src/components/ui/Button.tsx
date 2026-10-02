@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Button — slate-media-house/components/button.md
+ * Button
  *
  * Five variants, three sizes, one radius. Every value is a token.
  * `ButtonLink` renders a link that looks like a button; `Button` renders a real
@@ -20,7 +20,7 @@ const variants = {
   primary: "bg-primary text-inverse-strong hover:bg-secondary",
   /** Filled clay. Reserved for the single most important action on a page. */
   secondary: "bg-accent text-inverse-strong hover:bg-primary",
-  /** Filled accent-soft, black label — 14.65:1 on the fill. */
+  /** Filled accent-soft, black label, 14.65:1 on the fill. */
   highlight: "bg-accent-soft text-primary hover:bg-primary hover:text-inverse-strong",
   /** 1px border, transparent fill. */
   outline:
@@ -88,6 +88,7 @@ export function Button({
 }: CommonProps & ComponentProps<"button">) {
   return (
     <button
+      suppressHydrationWarning
       type="button"
       className={cn(base, variants[variant], sizes[size], className)}
       {...props}

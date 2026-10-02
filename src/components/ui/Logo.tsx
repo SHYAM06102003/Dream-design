@@ -10,35 +10,41 @@ type LogoProps = {
 };
 
 /**
- * Wordmark + mark. The mark is a plot boundary containing a roof line —
- * land and home in one glyph.
+ * Wordmark + mark. The mark is a roof with a DD monogram, matching the shop sign.
  */
 export function Logo({ variant = "full", onDark = false, className }: LogoProps) {
   return (
     <Link
       href="/"
-      aria-label={`${site.name} — home`}
+      aria-label={`${site.name}, home`}
       className={cn(
-        "group inline-flex items-center gap-3 transition-opacity duration-fast hover:opacity-70",
+        "group inline-flex min-h-11 items-center gap-2.5 transition-opacity sm:gap-3 duration-fast hover:opacity-70",
         onDark && "text-inverse-strong",
         className,
       )}
     >
       <svg
-        viewBox="0 0 32 32"
-        className="size-7 shrink-0"
+        viewBox="0 0 48 40"
+        className="h-9 w-auto shrink-0"
         fill="none"
         stroke="currentColor"
-        strokeWidth={1.3}
+        strokeWidth={1.4}
         aria-hidden="true"
       >
-        <path d="M3.4 3.4h25.2v25.2H3.4z" strokeOpacity={0.35} />
-        <path d="M8 18.4 16 11l8 7.4" strokeLinecap="square" />
-        <path d="M11 18.4V25h10v-6.6" />
+        {/* Roof and chimney */}
+        <path d="M2 21 24 4l22 17" strokeLinecap="square" />
+        <path d="M34 11V5h4v10" />
+        {/* DD monogram */}
+        <path d="M15 17h5a6 6 0 0 1 0 12h-5zM25 17h5a6 6 0 0 1 0 12h-5z" strokeWidth={1.2} />
+        {/* Base swoosh */}
+        <path d="M8 32c8 6 24 6 32 0" strokeLinecap="round" />
       </svg>
       {variant === "full" ? (
-        <span className="text-title-sm font-semibold">
-          {site.name}
+        <span className="flex flex-col leading-tight">
+          <span className="text-[1.125rem] font-semibold whitespace-nowrap min-[380px]:text-title-sm">{site.name}</span>
+          <span className="hidden text-caption opacity-70 sm:block">
+            {site.descriptor} · Since {site.since}
+          </span>
         </span>
       ) : (
         <span className="sr-only">{site.name}</span>

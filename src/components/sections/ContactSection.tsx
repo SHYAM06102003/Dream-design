@@ -1,54 +1,71 @@
-import { ArrowUpRight, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { formatAddress, site } from "@/data/site";
+import { MagneticButton } from "@/components/motion/MagneticButton";
 import { Reveal } from "@/components/ui/Reveal";
+import { SocialLinks } from "@/components/ui/SocialLinks";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-
-function mapQuery() {
-  const parts = [site.address.line1, site.address.city, site.address.region, site.address.postalCode, site.address.country]
-    .map((part) => part.trim())
-    .filter(Boolean);
-  return encodeURIComponent(parts.join(", "));
-}
+import { EnquiryForm } from "./EnquiryForm";
 
 export function ContactSection() {
   const address = formatAddress();
-  const isPlaceholderAddress = site.address.line1.toLowerCase().includes("add your");
+  const hasEmail = !site.email.display.endsWith("example.com");
+  const mapsHref = `${site.mapsUrl}${encodeURIComponent(address.join(", "))}`;
 
   const rows = [
-    {
-      icon: Phone,
-      label: "Phone",
-      value: site.phone.display,
-      href: `tel:${site.phone.href}`,
-    },
+    { icon: Phone, label: "Phone", value: site.phone.display, href: `tel:${site.phone.href}` },
     {
       icon: MessageCircle,
       label: "WhatsApp",
       value: site.phone.display,
       href: `https://wa.me/${site.whatsapp.number.replace(/\D/g, "")}`,
     },
-    {
-      icon: Mail,
-      label: "Email",
-      value: site.email.display,
-      href: site.email.href,
-    },
+    ...(hasEmail
+      ? [{ icon: Mail, label: "Email", value: site.email.display, href: site.email.href }]
+      : []),
   ];
 
   return (
-    <section id="contact" className="border-b border-line bg-surface py-11 lg:py-17">
+    <section id="contact" className="bg-surface py-14 lg:py-20">
       <div className="shell">
         <Reveal>
           <SectionHeading
             eyebrow="Contact"
-            title="Talk to us about your land."
-            description="Call, message or send the enquiry form — whichever is easiest. We will come back with the next step."
+            title="Tell us what you need."
+            description="Choose a service, share a few details and we will get back to you with the next step, usually a site visit."
           />
         </Reveal>
 
-        <div className="mt-14 grid gap-12 lg:mt-20 lg:grid-cols-12 lg:gap-16">
-          {/* Details */}
-          <Reveal className="lg:col-span-5">
+        <Reveal className="mt-10 grid gap-4 sm:grid-cols-2">
+          <MagneticButton className="block">
+            <a
+              href={`tel:${site.phone.href}`}
+              className="group flex items-center justify-between gap-4 rounded-md bg-primary p-6 text-inverse-strong transition-colors duration-slow ease-standard hover:bg-accent md:p-8"
+            >
+              <span>
+                <span className="block text-caption text-inverse">Call us</span>
+                <span className="mt-1 block text-title-sm whitespace-nowrap sm:text-title">{site.phone.display}</span>
+              </span>
+              <Phone className="size-6 transition-transform duration-slow group-hover:rotate-12" strokeWidth={1.4} aria-hidden="true" />
+            </a>
+          </MagneticButton>
+          <MagneticButton className="block">
+            <a
+              href={`https://wa.me/${site.whatsapp.number.replace(/\D/g, "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center justify-between gap-4 rounded-md bg-accent-soft p-6 text-primary transition-colors duration-slow ease-standard hover:bg-primary hover:text-inverse-strong md:p-8"
+            >
+              <span>
+                <span className="block text-caption">Chat on WhatsApp</span>
+                <span className="mt-1 block text-title-sm sm:text-title">Message us now</span>
+              </span>
+              <MessageCircle className="size-6 transition-transform duration-slow group-hover:scale-110" strokeWidth={1.4} aria-hidden="true" />
+            </a>
+          </MagneticButton>
+        </Reveal>
+
+        <div className="mt-12 grid gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-14">
+          <Reveal className="lg:col-span-4">
             <dl className="border-t border-line">
               {rows.map((row) => (
                 <div key={row.label} className="border-b border-line py-5">
@@ -56,12 +73,12 @@ export function ContactSection() {
                     <row.icon className="size-3.5" strokeWidth={1.5} aria-hidden="true" />
                     {row.label}
                   </dt>
-                  <dd className="mt-2.5">
+                  <dd className="mt-2">
                     <a
                       href={row.href}
                       target={row.href.startsWith("http") ? "_blank" : undefined}
                       rel={row.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                      className="text-title-sm transition-colors duration-fast ease-standard hover:text-accent"
+                      className="inline-flex min-h-11 items-center text-title-sm transition-colors duration-fast ease-standard hover:text-accent"
                     >
                       {row.value}
                     </a>
@@ -74,60 +91,41 @@ export function ContactSection() {
                   <MapPin className="size-3.5" strokeWidth={1.5} aria-hidden="true" />
                   Office
                 </dt>
-                <dd className={`mt-2.5 text-title-sm ${isPlaceholderAddress ? "placeholder" : ""}`}>
+                <dd
+                  className="mt-2 text-body"
+                >
                   {address.map((line) => (
                     <span key={line} className="block">
                       {line}
                     </span>
                   ))}
+                  <a
+                    href={mapsHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="arrow-link mt-2"
+                  >
+                    Open in Google Maps
+                  </a>
                 </dd>
               </div>
 
               <div className="border-b border-line py-5">
-                <dt className="text-caption font-medium text-secondary">
-                  {site.serviceArea.label}
-                </dt>
-                <dd className="mt-2.5 text-lede ">
-                  {site.serviceArea.items.length > 0 ? (
-                    site.serviceArea.items.join(" · ")
-                  ) : (
-                    <span className="placeholder">{site.serviceArea.note}</span>
-                  )}
-                </dd>
+                <dt className="text-caption font-medium text-secondary">{site.serviceArea.label}</dt>
+                <dd className="mt-2 text-body">{site.serviceArea.items.join(" · ")}</dd>
               </div>
 
               <div className="py-5">
-                <dt className="text-caption font-medium text-secondary">
-                  Business
-                </dt>
-                <dd className="mt-2.5 text-title-sm">
-                  {site.legalName}
+                <dt className="text-caption font-medium text-secondary">Follow us</dt>
+                <dd className="mt-3">
+                  <SocialLinks />
                 </dd>
               </div>
             </dl>
           </Reveal>
 
-          {/* Map placeholder */}
-          <Reveal className="lg:col-span-6 lg:col-start-7" delay={0.1}>
-            <div className="drafting-grid relative flex aspect-[4/3] w-full flex-col items-center justify-center border border-line bg-surface p-8 text-center">
-              <MapPin className="size-8 text-accent" strokeWidth={1.2} aria-hidden="true" />
-              <p className="mt-5 text-title-sm">
-                {isPlaceholderAddress ? "Map goes here" : site.address.line1}
-              </p>
-              <p className="placeholder mt-2 max-w-xs text-caption">
-                Add your office address in <code className="font-mono text-caption">data/site.ts</code> to
-                show the real location.
-              </p>
-              <a
-                href={`${site.mapsUrl}${mapQuery()}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="arrow-link mt-7"
-              >
-                Open in Google Maps
-                <ArrowUpRight className="size-4" strokeWidth={1.5} aria-hidden="true" />
-              </a>
-            </div>
+          <Reveal className="lg:col-span-8" delay={0.08}>
+            <EnquiryForm />
           </Reveal>
         </div>
       </div>

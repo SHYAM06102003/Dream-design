@@ -13,7 +13,7 @@ type PageMetaInput = {
 
 /**
  * Builds consistent, non-stuffed metadata for every route.
- * Titles follow "Page — Brand" so the brand stays visible in search results.
+ * Titles follow "Page, Brand" so the brand stays visible in search results.
  */
 export function pageMetadata({
   title,
@@ -46,12 +46,14 @@ export function pageMetadata({
   };
 }
 
-/** LocalBusiness JSON-LD. Placeholder values only — fill in from data/site.ts. */
+/** LocalBusiness JSON-LD. Placeholder values only, fill in from data/site.ts. */
 export function localBusinessJsonLd() {
   return {
     "@context": "https://schema.org",
-    "@type": "GeneralContractor",
+    "@type": "ProfessionalService",
     name: site.legalName,
+    slogan: site.descriptor,
+    foundingDate: String(site.since),
     description: site.description,
     url: site.url,
     telephone: site.phone.display,

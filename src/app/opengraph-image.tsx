@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { site } from "@/data/site";
 
-export const alt = `${site.name} — land surveying, architecture and home construction`;
+export const alt = `${site.name}, survey & civil consultant, since 2012`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -19,8 +19,8 @@ export default async function OpenGraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#121110",
-          color: "#FFFFFF",
+          background: "#1c1814",
+          color: "#fffaf3",
           padding: 72,
           fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         }}
@@ -32,7 +32,7 @@ export default async function OpenGraphImage() {
               width: 44,
               height: 44,
               display: "flex",
-              border: "2px solid #8A6A45",
+              border: "2px solid #94602c",
             }}
           />
           <div
@@ -50,7 +50,7 @@ export default async function OpenGraphImage() {
           <div style={{ fontSize: 76, lineHeight: 1.02, letterSpacing: -1.5 }}>
             From your land
           </div>
-          <div style={{ fontSize: 76, lineHeight: 1.02, letterSpacing: -1.5, color: "#E3D6C1" }}>
+          <div style={{ fontSize: 76, lineHeight: 1.02, letterSpacing: -1.5, color: "#e9d3b2" }}>
             to your dream home.
           </div>
         </div>
@@ -60,7 +60,7 @@ export default async function OpenGraphImage() {
           style={{
             display: "flex",
             fontSize: 22,
-            color: "#EFEDE6",
+            color: "#ece2d3",
           }}
         >
           Land · Survey · Design · Build · Home

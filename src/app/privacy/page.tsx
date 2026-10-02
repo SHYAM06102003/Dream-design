@@ -9,7 +9,7 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastReviewed = "Draft — review before launch";
+  const lastReviewed = "Draft, review before launch";
 
   return (
     <article className="bg-surface py-11 lg:py-17">
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
               <p className="mt-3">
                 The enquiry form on this website is front-end only. It does not send your details to
                 a server or store them. What you enter is used in your browser to build a message,
-                which you then choose to send — through WhatsApp, or by copying it yourself. Your
+                which you then choose to send, through WhatsApp, or by copying it yourself. Your
                 browser may hold basic, anonymous usage data through hosting and analytics providers.
               </p>
             </section>

@@ -17,8 +17,8 @@ export default function NotFound() {
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <ButtonLink href="/">Back to home</ButtonLink>
-          <ButtonLink href="/contact#enquiry" variant="outline">
-            Start your project
+          <ButtonLink href="/#contact" variant="outline">
+            Get a quote
             <ArrowUpRight className="size-4" strokeWidth={1.5} aria-hidden="true" />
           </ButtonLink>
         </div>

@@ -14,7 +14,7 @@ import { ButtonAnchor } from "@/components/ui/Button";
 type MobileMenuProps = {
   open: boolean;
   onClose: () => void;
-  pathname: string;
+  activeId: string | null;
 };
 
 /**
@@ -22,7 +22,7 @@ type MobileMenuProps = {
  * Escape closes it, Tab is trapped inside the panel, focus returns to the
  * trigger, and the page behind is inert to scrolling.
  */
-export function MobileMenu({ open, onClose, pathname }: MobileMenuProps) {
+export function MobileMenu({ open, onClose, activeId }: MobileMenuProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
@@ -87,6 +87,7 @@ export function MobileMenu({ open, onClose, pathname }: MobileMenuProps) {
           <div className="flex h-12 shrink-0 items-center justify-between border-b border-line px-5 pt-[env(safe-area-inset-top)] sm:px-8">
             <Logo />
             <button
+              suppressHydrationWarning
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
@@ -109,8 +110,7 @@ export function MobileMenu({ open, onClose, pathname }: MobileMenuProps) {
           <nav className="flex-1 overflow-y-auto overscroll-contain px-5 py-8 sm:px-8">
             <ul className="divide-y divide-line border-y border-line">
               {navigation.map((item, index) => {
-                const isActive =
-                  item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+                const isActive = activeId === item.id;
                 return (
                   <motion.li
                     key={item.href}
@@ -125,7 +125,7 @@ export function MobileMenu({ open, onClose, pathname }: MobileMenuProps) {
                     <Link
                       href={item.href}
                       onClick={onClose}
-                      aria-current={isActive ? "page" : undefined}
+                      aria-current={isActive ? "location" : undefined}
                       className={cn(
                         "flex items-center justify-between py-3.5 text-display-sm transition-colors duration-fast ease-standard sm:py-4",
                         isActive
@@ -133,7 +133,10 @@ export function MobileMenu({ open, onClose, pathname }: MobileMenuProps) {
                           : "text-primary hover:text-accent",
                       )}
                     >
-                      {item.label}
+                      <span className="flex items-baseline gap-4">
+                        <span className="text-caption font-medium opacity-50">0{index + 1}</span>
+                        {item.label}
+                      </span>
                       <ArrowUpRight
                         className="size-5 opacity-40"
                         strokeWidth={1.2}
@@ -164,7 +167,7 @@ export function MobileMenu({ open, onClose, pathname }: MobileMenuProps) {
                 size="lg"
               >
                 <MessageCircle className="size-4" strokeWidth={1.5} aria-hidden="true" />
-                Start your project
+                Chat on WhatsApp
               </ButtonAnchor>
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-1">
                 <a

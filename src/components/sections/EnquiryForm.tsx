@@ -1,16 +1,9 @@
 "use client";
 
-import { Loader2, MessageCircle, Send } from "lucide-react";
-import { useRef, useState } from "react";
-import {
-  budgetHint,
-  floorOptions,
-  houseTypeOptions,
-  landSizeHint,
-  serviceOptions,
-  type ServiceOptionId,
-} from "@/data/enquiry";
-import { site } from "@/data/site";
+import { Check, Compass, Loader2, MessageCircle, Ruler, Send } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { landSizeHint, serviceOptions, type ServiceOptionId } from "@/data/enquiry";
 import { whatsappMessages, whatsappUrl } from "@/lib/whatsapp";
 import {
   emptyEnquiry,
@@ -20,20 +13,24 @@ import {
   type EnquiryValues,
 } from "@/lib/validation";
 import { Button, ButtonAnchor } from "@/components/ui/Button";
-import { CheckboxGroup, SelectField, TextArea, TextField } from "@/components/ui/Field";
-import { PhoneLink } from "@/components/PhoneLink";
+import { TextArea, TextField } from "@/components/ui/Field";
 import { cn } from "@/lib/utils";
 
 type Status = "idle" | "submitting" | "prepared" | "error";
 
+const serviceIcons: Record<ServiceOptionId, typeof Ruler> = {
+  survey: Ruler,
+  civil: Compass,
+};
+
 /**
- * Project enquiry form.
+ * Enquiry form.
  *
- * Front-end only in this version: there is no backend or email service wired
- * up, so the form validates the details and then hands the enquiry to WhatsApp
- * rather than pretending a request was sent. To connect a real backend, submit
- * to an API route or your email/CRM provider in `handleSubmit` and swap
- * `status` to "prepared" only on a successful response.
+ * Front-end only: there is no backend or email service wired up, so the form
+ * validates the details and hands the enquiry to WhatsApp rather than
+ * pretending a request was sent. The service cards at the top are also
+ * pre-selected when a visitor clicks "Enquire" in the Services or Process
+ * sections (a `dd:select-service` event).
  */
 export function EnquiryForm({ className }: { className?: string }) {
   const [values, setValues] = useState<EnquiryValues>(emptyEnquiry);
@@ -41,6 +38,17 @@ export function EnquiryForm({ className }: { className?: string }) {
   const [status, setStatus] = useState<Status>("idle");
   const [notice, setNotice] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    function onSelect(event: Event) {
+      const id = (event as CustomEvent<ServiceOptionId>).detail;
+      setValues((current) => ({ ...current, services: [id] }));
+      setErrors((current) => ({ ...current, services: undefined }));
+      setStatus((current) => (current === "prepared" ? "idle" : current));
+    }
+    window.addEventListener("dd:select-service", onSelect);
+    return () => window.removeEventListener("dd:select-service", onSelect);
+  }, []);
 
   const update = <K extends keyof EnquiryValues>(key: K, value: EnquiryValues[K]) => {
     setValues((current) => ({ ...current, [key]: value }));
@@ -52,12 +60,13 @@ export function EnquiryForm({ className }: { className?: string }) {
     });
   };
 
-  function focusFirstError(nextErrors: EnquiryErrors) {
-    const firstKey = Object.keys(nextErrors)[0];
-    if (!firstKey) return;
-    const element = formRef.current?.querySelector<HTMLElement>(`#${CSS.escape(firstKey)}`);
-    element?.focus();
-  }
+  const toggleService = (id: ServiceOptionId) =>
+    update(
+      "services",
+      values.services.includes(id)
+        ? values.services.filter((item) => item !== id)
+        : [...values.services, id],
+    );
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,18 +78,19 @@ export function EnquiryForm({ className }: { className?: string }) {
     if (Object.keys(nextErrors).length > 0) {
       setStatus("error");
       setNotice("Please check the highlighted fields and try again.");
-      focusFirstError(nextErrors);
+      const firstKey = Object.keys(nextErrors)[0];
+      formRef.current
+        ?.querySelector<HTMLElement>(firstKey === "services" ? "[data-service]" : `#${CSS.escape(firstKey)}`)
+        ?.focus();
       return;
     }
 
     setStatus("submitting");
-
-    // No backend is connected yet — this pause only reflects preparing the message.
-    await new Promise((resolve) => setTimeout(resolve, 650));
-
+    // No backend is connected yet, this pause only reflects preparing the message.
+    await new Promise((resolve) => setTimeout(resolve, 500));
     setStatus("prepared");
     setNotice(
-      "Your details are ready to send. This site has no server connected yet, so nothing has been transmitted — continue on WhatsApp and it will arrive instantly.",
+      "Your details are ready. This site has no server connected yet, so nothing has been sent, continue on WhatsApp and it will reach us instantly.",
     );
   }
 
@@ -89,242 +99,237 @@ export function EnquiryForm({ className }: { className?: string }) {
       await navigator.clipboard.writeText(formatEnquirySummary(values));
       setNotice("Enquiry copied to your clipboard.");
     } catch {
-      setStatus("error");
       setNotice("Copying is not available in this browser. Use WhatsApp or call us instead.");
     }
   }
 
   const summary = formatEnquirySummary(values);
   const isSubmitting = status === "submitting";
+  const wantsSurvey = values.services.includes("survey");
 
-  return (
-    <div className={cn("grid gap-10 lg:grid-cols-12 lg:gap-14", className)}>
-      {/* Pitch */}
-      <div className="lg:col-span-4">
-        <h2 className="text-display-sm">
-          Have a plot?
-          <br />
-          Let&rsquo;s turn it into a home.
-        </h2>
-        <p className="mt-6 max-w-sm text-lede text-secondary">
-          Tell us about the land and what you have in mind. We usually reply with the next
-          step &mdash; often a site visit and an honest view of what the plot will take.
-        </p>
+  if (status === "prepared") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.2, 0, 0, 1] }}
+        className={cn("rounded-md border border-line p-7 md:p-10", className)}
+      >
+        <p className="eyebrow">Almost there</p>
+        <h3 className="mt-5 text-title">Send this through WhatsApp</h3>
+        <p className="mt-4 text-body text-secondary">{notice}</p>
 
-        <div className="mt-10 flex flex-col gap-3">
+        <pre className="mt-6 max-h-64 overflow-auto rounded-sm border border-line bg-surface p-5 text-caption whitespace-pre-wrap text-primary">
+          {summary}
+        </pre>
+
+        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
           <ButtonAnchor
-            href={whatsappUrl(whatsappMessages.consultation())}
+            href={whatsappUrl(whatsappMessages.form(summary))}
             target="_blank"
             rel="noopener noreferrer"
-            variant="outline"
             size="lg"
           >
             <MessageCircle className="size-4" strokeWidth={1.5} aria-hidden="true" />
-            WhatsApp us
+            Send on WhatsApp
           </ButtonAnchor>
-          <PhoneLink
-            className="h-14 justify-center rounded-sm border border-secondary px-6 text-caption font-medium transition-colors duration-fast ease-standard hover:border-primary hover:bg-primary hover:text-inverse-strong"
-          >
-            <span className="hidden sm:inline">Call </span>
-            {site.phone.display}
-          </PhoneLink>
+          <Button onClick={copyDetails} variant="outline" size="lg">
+            Copy details
+          </Button>
         </div>
 
-        <p className="placeholder mt-8 text-caption">
-          Phone, email and office details are placeholders &mdash; update them in{" "}
-          <code className="font-mono text-caption">data/site.ts</code>.
+        <button
+
+          suppressHydrationWarning
+          type="button"
+          onClick={() => {
+            setStatus("idle");
+            setNotice("");
+          }}
+          className="mt-6 text-caption text-secondary underline underline-offset-4 transition-colors hover:text-primary"
+        >
+          Edit the details
+        </button>
+      </motion.div>
+    );
+  }
+
+  return (
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      noValidate
+      className={cn("flex flex-col gap-8 rounded-md border border-line bg-surface p-6 md:p-10", className)}
+    >
+      <fieldset>
+        <legend className="text-caption font-medium text-secondary">
+          Which service do you need?
+          <span className="ml-1 text-accent" aria-hidden="true">
+            *
+          </span>
+        </legend>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {serviceOptions.map((option) => {
+            const checked = values.services.includes(option.id);
+            const Icon = serviceIcons[option.id];
+            return (
+              <label
+                key={option.id}
+                className={cn(
+                  "relative flex cursor-pointer items-center gap-4 rounded-md border p-4 transition-colors duration-fast ease-standard focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent",
+                  checked
+                    ? "border-primary bg-primary text-inverse-strong"
+                    : "border-secondary hover:border-primary",
+                )}
+              >
+                <input
+                  suppressHydrationWarning
+                  type="checkbox"
+                  data-service=""
+                  checked={checked}
+                  onChange={() => toggleService(option.id)}
+                  className="sr-only"
+                />
+                <span
+                  className={cn(
+                    "flex size-11 shrink-0 items-center justify-center rounded-sm",
+                    checked ? "bg-inverse-strong text-primary" : "bg-accent-soft text-primary",
+                  )}
+                >
+                  <Icon className="size-5" strokeWidth={1.4} aria-hidden="true" />
+                </span>
+                <span className="flex-1">
+                  <span className="block text-body font-semibold">{option.label}</span>
+                  <span className={cn("block text-caption", checked ? "text-inverse" : "text-secondary")}>
+                    {option.hint}
+                  </span>
+                </span>
+                {checked ? <Check className="size-5" strokeWidth={2} aria-hidden="true" /> : null}
+              </label>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-caption text-secondary">Choose one, or both.</p>
+        {errors.services ? (
+          <p className="mt-2 text-caption text-accent" role="alert">
+            {errors.services}
+          </p>
+        ) : null}
+      </fieldset>
+
+      <div className="grid gap-8 sm:grid-cols-2">
+        <TextField
+          id="name"
+          label="Name"
+          name="name"
+          autoComplete="name"
+          placeholder="Your full name"
+          required
+          value={values.name}
+          error={errors.name}
+          onChange={(event) => update("name", event.target.value)}
+        />
+        <TextField
+          id="phone"
+          label="Phone / WhatsApp"
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="e.g. +91 98765 43210"
+          required
+          value={values.phone}
+          error={errors.phone}
+          onChange={(event) => update("phone", event.target.value)}
+        />
+        <TextField
+          id="email"
+          label="Email"
+          name="email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="Optional"
+          value={values.email}
+          error={errors.email}
+          onChange={(event) => update("email", event.target.value)}
+        />
+        <TextField
+          id="location"
+          label="Location"
+          name="location"
+          placeholder="Village, town or district"
+          required
+          value={values.location}
+          error={errors.location}
+          onChange={(event) => update("location", event.target.value)}
+        />
+        <TextField
+          id="landSize"
+          label={wantsSurvey ? "Plot size" : "Plot size (if known)"}
+          name="landSize"
+          placeholder="Optional"
+          hint={landSizeHint}
+          value={values.landSize}
+          error={errors.landSize}
+          onChange={(event) => update("landSize", event.target.value)}
+          className="sm:col-span-2"
+        />
+      </div>
+
+      <TextArea
+        id="message"
+        label="Message"
+        name="message"
+        placeholder="Tell us a little about the plot or the project, and when you would like us to visit."
+        value={values.message}
+        error={errors.message}
+        onChange={(event) => update("message", event.target.value)}
+      />
+
+      <AnimatePresence>
+        {notice ? (
+          <motion.p
+            key={notice}
+            role="status"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className={cn(
+              "overflow-hidden border-l-3 pl-4 text-body",
+              status === "error" ? "border-accent text-accent" : "border-primary text-secondary",
+            )}
+          >
+            {notice}
+          </motion.p>
+        ) : null}
+      </AnimatePresence>
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isSubmitting}
+          aria-busy={isSubmitting}
+          className="disabled:cursor-wait disabled:opacity-60"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="size-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />
+              Preparing
+            </>
+          ) : (
+            <>
+              Send enquiry
+              <Send className="size-4" strokeWidth={1.5} aria-hidden="true" />
+            </>
+          )}
+        </Button>
+        <p className="text-caption text-secondary">
+          We only use these details to reply to your enquiry.
         </p>
       </div>
-
-      {/* Form */}
-      <div className="lg:col-span-7 lg:col-start-6">
-        {status === "prepared" ? (
-          <div className="rounded-md border border-line p-7 md:p-10">
-            <p className="eyebrow">Almost there</p>
-            <h3 className="mt-5 text-title">Send this through WhatsApp</h3>
-            <p className="mt-4 text-body text-secondary">{notice}</p>
-
-            <pre className="mt-6 max-h-64 overflow-auto border border-line bg-surface p-5 text-caption whitespace-pre-wrap text-primary">
-              {summary}
-            </pre>
-
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <ButtonAnchor
-                href={whatsappUrl(whatsappMessages.form(summary))}
-                target="_blank"
-                rel="noopener noreferrer"
-                size="lg"
-              >
-                <MessageCircle className="size-4" strokeWidth={1.5} aria-hidden="true" />
-                Send on WhatsApp
-              </ButtonAnchor>
-              <Button onClick={copyDetails} variant="outline" size="lg">
-                Copy details
-              </Button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setValues(emptyEnquiry);
-                setErrors({});
-                setStatus("idle");
-                setNotice("");
-              }}
-              className="mt-6 text-caption text-secondary underline underline-offset-4 transition-colors hover:text-primary"
-            >
-              Edit the details
-            </button>
-          </div>
-        ) : (
-          <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-8">
-            <div className="grid gap-8 sm:grid-cols-2">
-              <TextField
-                id="name"
-                label="Name"
-                name="name"
-                autoComplete="name"
-                placeholder="Your full name"
-                required
-                value={values.name}
-                error={errors.name}
-                onChange={(event) => update("name", event.target.value)}
-              />
-              <TextField
-                id="phone"
-                label="Phone / WhatsApp"
-                name="phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="Include your area or country code"
-                required
-                value={values.phone}
-                error={errors.phone}
-                onChange={(event) => update("phone", event.target.value)}
-              />
-              <TextField
-                id="email"
-                label="Email"
-                name="email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                placeholder="Optional"
-                value={values.email}
-                error={errors.email}
-                onChange={(event) => update("email", event.target.value)}
-              />
-              <TextField
-                id="location"
-                label="Location of the land"
-                name="location"
-                placeholder="Village, city or area"
-                required
-                value={values.location}
-                error={errors.location}
-                onChange={(event) => update("location", event.target.value)}
-              />
-              <TextField
-                id="landSize"
-                label="Land size"
-                name="landSize"
-                placeholder="e.g. 2,400 sq.ft"
-                hint={landSizeHint}
-                required
-                value={values.landSize}
-                error={errors.landSize}
-                onChange={(event) => update("landSize", event.target.value)}
-              />
-              <TextField
-                id="budget"
-                label="Approximate budget"
-                name="budget"
-                placeholder="Optional"
-                hint={budgetHint}
-                value={values.budget}
-                error={errors.budget}
-                onChange={(event) => update("budget", event.target.value)}
-              />
-              <SelectField
-                id="houseType"
-                label="Type of house"
-                name="houseType"
-                options={houseTypeOptions}
-                value={values.houseType}
-                error={errors.houseType}
-                onChange={(event) => update("houseType", event.target.value)}
-              />
-              <SelectField
-                id="floors"
-                label="Number of floors"
-                name="floors"
-                options={floorOptions}
-                placeholder="Optional"
-                value={values.floors}
-                error={errors.floors}
-                onChange={(event) => update("floors", event.target.value)}
-              />
-            </div>
-
-            <CheckboxGroup
-              legend="Required services"
-              options={serviceOptions.map((option) => ({ id: option.id, label: option.label }))}
-              value={values.services}
-              onChange={(next) => update("services", next as ServiceOptionId[])}
-              error={errors.services}
-            />
-
-            <TextArea
-              id="message"
-              label="Message"
-              name="message"
-              placeholder="Anything we should know — access, timelines, rooms you need, or an existing structure."
-              value={values.message}
-              error={errors.message}
-              onChange={(event) => update("message", event.target.value)}
-            />
-
-            {notice ? (
-              <p
-                role="status"
-                className={cn(
-                  "border-l-3 pl-4 text-body",
-                  status === "error" ? "border-accent text-accent" : "border-primary text-secondary",
-                )}
-              >
-                {notice}
-              </p>
-            ) : null}
-
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isSubmitting}
-                aria-busy={isSubmitting}
-                className="disabled:cursor-wait disabled:opacity-60"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />
-                    Preparing
-                  </>
-                ) : (
-                  <>
-                    Request a consultation
-                    <Send className="size-4" strokeWidth={1.5} aria-hidden="true" />
-                  </>
-                )}
-              </Button>
-
-              <p className="text-caption text-secondary">
-                No account needed. We only use these details to reply about your project.
-              </p>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+    </form>
   );
 }

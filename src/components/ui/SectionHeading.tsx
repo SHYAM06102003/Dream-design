@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { TextReveal } from "@/components/motion/TextReveal";
 import { cn } from "@/lib/utils";
 
 type SectionHeadingProps = {
@@ -16,7 +17,7 @@ type SectionHeadingProps = {
 };
 
 /**
- * Section heading — slate-media-house/components/section-layout.md §3
+ * Section heading
  *
  * One idea per section. The eyebrow is sentence case, the heading uses the
  * display token, and the measure on the description is capped.
@@ -42,19 +43,15 @@ export function SectionHeading({
         {eyebrow ? (
           <p className={cn("eyebrow", onDark && "eyebrow-on-dark")}>{eyebrow}</p>
         ) : null}
-        <Tag
+        <TextReveal
+          as={Tag}
+          lines={title.split("\n")}
           className={cn(
             "mt-6 text-balance",
             size === "section" ? "text-display-sm" : "text-title",
             onDark && "text-inverse-strong",
           )}
-        >
-          {title.split("\n").map((line, index) => (
-            <span key={line + index} className="block">
-              {line}
-            </span>
-          ))}
-        </Tag>
+        />
         {description ? (
           <p
             className={cn(

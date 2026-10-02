@@ -2,12 +2,13 @@ import type { Metadata, Viewport } from "next";
 import { Instrument_Sans } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { RevealObserver } from "@/components/ui/RevealObserver";
+import { MotionProvider } from "@/components/motion/MotionProvider";
+import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { localBusinessJsonLd } from "@/lib/seo";
 import { site } from "@/data/site";
 import "./globals.css";
 
-/* One grotesque family for the whole site (slate-media-house/README.md §2).
+/* One grotesque family for the whole site.
    The stack is `Host Grotesk, Candara, sans-serif`; Host Grotesk is not
    distributable as a web font, so Instrument Sans stands in for it and
    Candara remains the first system fallback. */
@@ -19,7 +20,7 @@ const sans = Instrument_Sans({
   display: "swap",
 });
 
-const defaultTitle = "Land Surveying, Architecture & Home Construction";
+const defaultTitle = "Survey & Civil Consultant";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -31,7 +32,9 @@ export const metadata: Metadata = {
   description: site.description,
   applicationName: site.name,
   keywords: [
+    "survey and civil consultant",
     "land surveying",
+    "civil consultant",
     "house plan",
     "architectural design",
     "3D house design",
@@ -66,7 +69,7 @@ export const metadata: Metadata = {
 
 /** The page surface is a single flat colour, so one theme colour is correct. */
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#faf6ef",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -77,12 +80,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <head>
-        {/* Enables the hidden start state for scroll reveals (see globals.css). */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: 'document.documentElement.classList.add("js")',
-          }}
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd()) }}
@@ -95,10 +92,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <Navbar />
-        <main id="main">{children}</main>
-        <Footer />
-        <RevealObserver />
+        <MotionProvider>
+          <ScrollProgress />
+          <Navbar />
+          <main id="main">{children}</main>
+          <Footer />
+        </MotionProvider>
       </body>
     </html>
   );

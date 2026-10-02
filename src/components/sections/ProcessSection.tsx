@@ -1,26 +1,23 @@
-import { processIntro } from "@/data/process";
-import { ArrowLink } from "@/components/ui/ArrowLink";
+import { sections } from "@/data/offerings";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { ProcessTimeline } from "./ProcessTimeline";
+import { OfferingTabs } from "./OfferingTabs";
 
-/** "How we work" — the six stage journey. */
 export function ProcessSection() {
   return (
-    <section id="process" className="border-b border-line bg-surface py-11 lg:py-17">
+    <section id="process" data-nav-dark className="bg-primary py-14 text-inverse-strong lg:py-20">
       <div className="shell">
         <Reveal>
           <SectionHeading
-            eyebrow={processIntro.eyebrow}
-            title={processIntro.title}
-            description={processIntro.description}
-            action={<ArrowLink href="/process">Full process</ArrowLink>}
+            onDark
+            eyebrow={sections.process.eyebrow}
+            title={sections.process.title}
+            description={sections.process.description}
           />
         </Reveal>
-
-        <div className="mt-14 lg:mt-20">
-          <ProcessTimeline />
-        </div>
+        <Reveal className="mt-12 lg:mt-16" delay={0.08}>
+          <OfferingTabs mode="process" onDark />
+        </Reveal>
       </div>
     </section>
   );

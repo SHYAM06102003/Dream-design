@@ -6,9 +6,6 @@ export type EnquiryValues = {
   email: string;
   location: string;
   landSize: string;
-  budget: string;
-  houseType: string;
-  floors: string;
   services: ServiceOptionId[];
   message: string;
 };
@@ -21,27 +18,24 @@ export const emptyEnquiry: EnquiryValues = {
   email: "",
   location: "",
   landSize: "",
-  budget: "",
-  houseType: "",
-  floors: "",
   services: [],
   message: "",
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-export function countPhoneDigits(value: string) {
-  return value.replace(/\D/g, "").length;
-}
-
-export function isValidPhone(value: string) {
-  const digits = countPhoneDigits(value);
+function isValidPhone(value: string) {
+  const digits = value.replace(/\D/g, "").length;
   return digits >= 7 && digits <= 15;
 }
 
 /** Validates the enquiry form. Returns a field-keyed error map. */
 export function validateEnquiry(values: EnquiryValues): EnquiryErrors {
   const errors: EnquiryErrors = {};
+
+  if (values.services.length === 0) {
+    errors.services = "Choose Survey, Civil Consultant, or both.";
+  }
 
   if (values.name.trim().length < 2) {
     errors.name = "Please enter your name.";
@@ -50,7 +44,7 @@ export function validateEnquiry(values: EnquiryValues): EnquiryErrors {
   if (values.phone.trim() === "") {
     errors.phone = "Please enter a phone or WhatsApp number.";
   } else if (!isValidPhone(values.phone)) {
-    errors.phone = "That number looks incomplete — include the country or area code.";
+    errors.phone = "That number looks incomplete, include the area or country code.";
   }
 
   if (values.email.trim() !== "" && !EMAIL_PATTERN.test(values.email.trim())) {
@@ -58,15 +52,7 @@ export function validateEnquiry(values: EnquiryValues): EnquiryErrors {
   }
 
   if (values.location.trim().length < 2) {
-    errors.location = "Where is the land located?";
-  }
-
-  if (values.landSize.trim().length < 2) {
-    errors.landSize = "An approximate plot size is enough to start.";
-  }
-
-  if (values.services.length === 0) {
-    errors.services = "Choose at least one service.";
+    errors.location = "Where is the plot or the project located?";
   }
 
   return errors;
@@ -79,15 +65,12 @@ export function formatEnquirySummary(values: EnquiryValues) {
     .map((option) => option.label);
 
   const lines = [
+    `Service: ${serviceLabels.join(" + ")}`,
     `Name: ${values.name.trim()}`,
     `Phone / WhatsApp: ${values.phone.trim()}`,
     values.email.trim() ? `Email: ${values.email.trim()}` : null,
     `Location: ${values.location.trim()}`,
-    `Land size: ${values.landSize.trim()}`,
-    values.budget.trim() ? `Budget: ${values.budget.trim()}` : null,
-    values.houseType ? `House type: ${values.houseType}` : null,
-    values.floors ? `Floors: ${values.floors}` : null,
-    serviceLabels.length ? `Services: ${serviceLabels.join(", ")}` : null,
+    values.landSize.trim() ? `Plot size: ${values.landSize.trim()}` : null,
     values.message.trim() ? `\nMessage: ${values.message.trim()}` : null,
   ];
 

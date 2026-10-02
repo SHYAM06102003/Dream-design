@@ -15,7 +15,7 @@ export default function TermsPage() {
         <div className="max-w-3xl">
           <p className="eyebrow">Legal</p>
           <h1 className="mt-6 text-display-sm">Terms of use</h1>
-          <p className="placeholder mt-4 text-caption">Draft — review before launch</p>
+          <p className="placeholder mt-4 text-caption">Draft, review before launch</p>
 
           <div className="mt-10 space-y-8 text-body text-secondary">
             <p className="placeholder rounded-md border border-line p-6 text-body">
@@ -28,7 +28,7 @@ export default function TermsPage() {
               <h2 className="text-title-sm">About this website</h2>
               <p className="mt-3">
                 This website belongs to {site.legalName}. It is provided for general information
-                about the services offered. Using it does not create a client relationship — that
+                about the services offered. Using it does not create a client relationship, that
                 begins only once a written agreement is signed.
               </p>
             </section>
