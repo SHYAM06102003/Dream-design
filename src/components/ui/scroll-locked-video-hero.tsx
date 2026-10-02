@@ -16,7 +16,9 @@ import { useEffect, useRef, useState } from "react"
 //   - it actually unlocks at the end (the original never did)
 //   - keyboard keys (arrows, space, page up/down, home/end) work
 //   - clicking an in-page link (#services, #contact) skips ahead
-//   - prefers-reduced-motion: no lock, the final frame is shown
+//   - prefers-reduced-motion: the story still plays, because it only moves
+//     when the visitor scrolls; the smoothing and the headline entrance are
+//     dropped. (Many phones switch this setting on in power-saving mode.)
 // ─────────────────────────────────────────────────────────────
 
 export interface ScrollLockedVideoHeroProps {
@@ -102,7 +104,6 @@ export default function ScrollLockedVideoHero({
     const onLoadedData = () => {
       duration = video.duration || 0
       setReady(true)
-      if (reduceMotion) video.currentTime = Math.max(0, duration - 0.05)
     }
     video.addEventListener("loadeddata", onLoadedData)
     video.addEventListener("durationchange", onLoadedData)
@@ -272,14 +273,12 @@ export default function ScrollLockedVideoHero({
       finishAndRelease()
     }
 
-    if (!reduceMotion) {
-      engageLock()
-      window.addEventListener("wheel", onWheel, { passive: false })
-      window.addEventListener("touchstart", onTouchStart, { passive: true })
-      window.addEventListener("touchmove", onTouchMove, { passive: false })
-      window.addEventListener("keydown", onKeyDown)
-      document.addEventListener("click", onClick, true)
-    }
+    engageLock()
+    window.addEventListener("wheel", onWheel, { passive: false })
+    window.addEventListener("touchstart", onTouchStart, { passive: true })
+    window.addEventListener("touchmove", onTouchMove, { passive: false })
+    window.addEventListener("keydown", onKeyDown)
+    document.addEventListener("click", onClick, true)
 
     let lastStage = 0
 
@@ -322,20 +321,14 @@ export default function ScrollLockedVideoHero({
     }
 
     function frame() {
-      currentProgress += (targetProgress - currentProgress) * 0.18
+      // Eased follow normally; direct 1:1 tracking when reduced motion is asked for.
+      currentProgress = reduceMotion ? targetProgress : currentProgress + (targetProgress - currentProgress) * 0.18
       if (duration > 0) seekTo(currentProgress * duration)
       draw()
       rafId = requestAnimationFrame(frame)
     }
 
-    if (reduceMotion) {
-      // No lock, no scrubbing: show the finished home with its call to action.
-      targetProgress = currentProgress = 1
-      hasStartedScrolling = true
-      draw()
-    } else {
-      rafId = requestAnimationFrame(frame)
-    }
+    rafId = requestAnimationFrame(frame)
 
     return () => {
       video.removeEventListener("loadeddata", onLoadedData)
