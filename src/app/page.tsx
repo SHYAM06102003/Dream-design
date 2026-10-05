@@ -15,7 +15,7 @@ export const metadata: Metadata = pageMetadata({
   path: "/",
   title: "Survey & Civil Consultant in Annur, Dream Design",
   description:
-    "Dream Design, land survey and civil consultancy serving Annur since 2012. Boundary and contour surveys, house planning, estimation and site supervision.",
+    "Dream Design, land survey and civil consultancy serving Annur since 2012. FMB boundary fixing, contour and topographical surveys, DTCP layouts, building plan approvals, estimation, 3D elevation and construction.",
 });
 
 export default function HomePage() {

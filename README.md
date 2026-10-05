@@ -28,7 +28,7 @@ site is a single page; the navbar highlights the section being read.
 | Section | Id | Notes |
 | --- | --- | --- |
 | Hero | `#home` | |
-| Services | `#services` | Two clickable cards (Survey / Civil Consultant) swap the detail panel |
+| Services | `#services` | Survey / Civil Consultant switch, then a list of every service with a picture and full explanation |
 | Process | `#process` | Same two cards, each showing its own step-by-step process |
 | About | `#about` | Shared |
 | Contact | `#contact` | Enquiry form with a Survey / Civil Consultant / both picker |

@@ -6,6 +6,7 @@ import { ParallaxImage } from "@/components/motion/ParallaxImage";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { about } from "@/data/about";
+import { serviceCount } from "@/data/offerings";
 import { site } from "@/data/site";
 
 export function AboutSection() {
@@ -57,9 +58,9 @@ export function AboutSection() {
                 </div>
                 <div>
                   <dd className="text-display-sm leading-none text-accent">
-                    <AnimatedCounter to={2} />
+                    <AnimatedCounter to={serviceCount} />
                   </dd>
-                  <dt className="mt-3 text-caption text-secondary">Focused services</dt>
+                  <dt className="mt-3 text-caption text-secondary">Services offered</dt>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <dd className="text-title leading-tight font-semibold text-accent">Annur</dd>

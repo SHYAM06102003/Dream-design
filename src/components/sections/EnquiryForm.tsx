@@ -3,7 +3,13 @@
 import { Check, Compass, Loader2, MessageCircle, Ruler, Send } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { landSizeHint, serviceOptions, type ServiceOptionId } from "@/data/enquiry";
+import {
+  landSizeHint,
+  serviceOptions,
+  topicMessagePrefix,
+  type ServiceOptionId,
+  type ServiceSelection,
+} from "@/data/enquiry";
 import { whatsappMessages, whatsappUrl } from "@/lib/whatsapp";
 import {
   emptyEnquiry,
@@ -41,8 +47,16 @@ export function EnquiryForm({ className }: { className?: string }) {
 
   useEffect(() => {
     function onSelect(event: Event) {
-      const id = (event as CustomEvent<ServiceOptionId>).detail;
-      setValues((current) => ({ ...current, services: [id] }));
+      const { id, topic } = (event as CustomEvent<ServiceSelection>).detail;
+      setValues((current) => {
+        // Name the service in the message, unless the visitor has written their own.
+        const untouched = current.message.trim() === "" || current.message.startsWith(topicMessagePrefix);
+        return {
+          ...current,
+          services: [id],
+          message: topic && untouched ? `${topicMessagePrefix}${topic}.` : current.message,
+        };
+      });
       setErrors((current) => ({ ...current, services: undefined }));
       setStatus((current) => (current === "prepared" ? "idle" : current));
     }

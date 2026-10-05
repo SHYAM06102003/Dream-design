@@ -10,9 +10,10 @@ import {
 import { ArrowUpRight, Compass, Ruler } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { MagneticButton } from "@/components/motion/MagneticButton";
-import { ParallaxImage } from "@/components/motion/ParallaxImage";
+import { type ServiceSelection } from "@/data/enquiry";
 import { offerings, type Offering, type OfferingId } from "@/data/offerings";
 import { cn } from "@/lib/utils";
+import { ServiceExplorer } from "./ServiceExplorer";
 
 type OfferingTabsProps = {
   /** "services" shows what each offering covers; "process" shows how it is delivered. */
@@ -25,8 +26,9 @@ const icons: Record<OfferingId, typeof Ruler> = { survey: Ruler, civil: Compass 
 const ease = [0.2, 0, 0, 1] as const;
 
 /** Tells the enquiry form which service the visitor was looking at. */
-function chooseService(id: OfferingId) {
-  window.dispatchEvent(new CustomEvent("dd:select-service", { detail: id }));
+function chooseService(id: OfferingId, topic?: string) {
+  const detail: ServiceSelection = { id, topic };
+  window.dispatchEvent(new CustomEvent("dd:select-service", { detail }));
 }
 
 const panel: Variants = {
@@ -40,8 +42,8 @@ const item: Variants = {
 };
 
 /**
- * Two large, clearly clickable cards (Survey and Civil Consultant) and the
- * detail panel for whichever is selected. One component serves both the
+ * A Survey / Civil Consultant switch and the detail panel for whichever is
+ * selected: every service it covers, or its process. One component serves both the
  * Services and the Process sections so they behave identically.
  */
 export function OfferingTabs({ mode, onDark = false }: OfferingTabsProps) {
@@ -154,78 +156,28 @@ export function OfferingTabs({ mode, onDark = false }: OfferingTabsProps) {
 
 function ServiceDetail({ offering }: { offering: Offering }) {
   return (
-    <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
-      <motion.div variants={item} className="lg:col-span-5">
-        <div className="lg:sticky lg:top-28">
-          <ParallaxImage
-            src={offering.image.src}
-            alt={offering.image.alt}
-            positionClassName={offering.image.positionClassName}
-            sizes="(min-width: 1024px) 40vw, 100vw"
-            className="aspect-[4/3] w-full lg:aspect-[4/5]"
-          />
-          <p className="mt-3 flex items-center gap-3 text-caption text-secondary">
-            <span aria-hidden="true" className="h-px w-8 bg-secondary" />
+    <div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+        <div className="max-w-3xl">
+          <motion.h3 variants={item} className="text-title">
             {offering.title}
-          </p>
+          </motion.h3>
+          <motion.p variants={item} className="mt-4 text-lede text-secondary">
+            {offering.intro}
+          </motion.p>
         </div>
-      </motion.div>
-
-      <div className="lg:col-span-7">
-        <motion.h3 variants={item} className="text-title">
-          {offering.title}
-        </motion.h3>
-        <motion.p variants={item} className="mt-4 max-w-2xl text-lede text-secondary">
-          {offering.intro}
+        <motion.p variants={item} className="flex shrink-0 items-center gap-3 text-caption text-secondary">
+          <span aria-hidden="true" className="h-px w-8 bg-secondary" />
+          {offering.services.length} services, tap one to read more
         </motion.p>
-
-        <ul className="mt-10 grid gap-x-8 gap-y-2 sm:grid-cols-2">
-          {offering.deliverables.map((entry, index) => (
-            <motion.li
-              key={entry.title}
-              variants={item}
-              whileHover={{ x: 6 }}
-              transition={{ type: "spring", stiffness: 300, damping: 24 }}
-              className="group border-t border-line py-5"
-            >
-              <p className="flex items-center gap-3 text-caption font-medium text-accent">
-                0{index + 1}
-                <span aria-hidden="true" className="h-px w-6 bg-accent/40 transition-all duration-slow group-hover:w-10" />
-              </p>
-              <h4 className="mt-2 text-body font-semibold">{entry.title}</h4>
-              <p className="mt-2 text-body text-secondary">{entry.description}</p>
-            </motion.li>
-          ))}
-        </ul>
-
-        <motion.div variants={item} className="mt-8 rounded-md bg-accent-soft/50 p-6">
-          <p className="text-caption font-semibold">Useful when you are&hellip;</p>
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {offering.suitedFor.map((entry) => (
-              <li key={entry} className="rounded-lg border border-accent/30 bg-surface px-4 py-2 text-caption">
-                {entry}
-              </li>
-            ))}
-          </ul>
-        </motion.div>
-
-        <motion.div variants={item} className="mt-8">
-          <MagneticButton className="block sm:inline-block">
-            <a
-              href="#contact"
-              onClick={() => chooseService(offering.id)}
-              className="group/cta flex min-h-14 w-full items-center justify-between gap-3 rounded-sm bg-primary px-6 py-3 sm:inline-flex sm:w-auto sm:justify-start text-caption font-semibold text-inverse-strong transition-colors duration-fast ease-standard hover:bg-accent"
-            >
-              {offering.cta.enquire}
-              <ArrowUpRight
-                className="size-4 transition-transform duration-slow ease-standard group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5"
-                strokeWidth={1.6}
-                aria-hidden="true"
-              />
-            </a>
-          </MagneticButton>
-        </motion.div>
       </div>
+
+      <motion.div variants={item} className="mt-8 lg:mt-12">
+        <ServiceExplorer
+          offering={offering}
+          onEnquire={(service) => chooseService(offering.id, service.title)}
+        />
+      </motion.div>
     </div>
   );
 }
